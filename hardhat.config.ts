@@ -1,12 +1,12 @@
-import '@nomiclabs/hardhat-ethers';
+import '@nomicfoundation/hardhat-ethers';
+import '@nomicfoundation/hardhat-toolbox';
 import '@nomicfoundation/hardhat-verify';
-import '@nomiclabs/hardhat-waffle';
 import '@typechain/hardhat';
 import 'hardhat-contract-sizer';
 import 'hardhat-deploy';
 import 'hardhat-gas-reporter';
+import 'hardhat-signer-kms';
 import '@oasisprotocol/sapphire-hardhat';
-import '@rumblefishdev/hardhat-kms-signer';
 import '@matterlabs/hardhat-zksync-deploy';
 import '@matterlabs/hardhat-zksync-solc';
 // Imports the verify plugin before the upgradable plugin
@@ -99,6 +99,9 @@ const oasysTestPrivateKey = process.env.OASYS_TEST_PRIVATE_KEY || DEFAULT_PRIVAT
 
 const antimatterB2TestEndpoint = process.env.ANTIMATTER_B2_TEST_ENDPOINT || DEFAULT_ENDPOINT;
 const antimatterB2TestPrivateKey = process.env.ANTIMATTER_B2_TEST_PRIVATE_KEY || DEFAULT_PRIVATE_KEY;
+
+const holeskyEndpoint = process.env.HOLESKY_ENDPOINT || DEFAULT_ENDPOINT;
+const holeskyPrivateKey = process.env.HOLESKY_PRIVATE_KEY || DEFAULT_PRIVATE_KEY;
 
 // Mainnets
 const ethMainnetEndpoint = process.env.ETH_MAINNET_ENDPOINT || DEFAULT_ENDPOINT;
@@ -251,17 +254,20 @@ const scrollPrivateKey = process.env.SCROLL_PRIVATE_KEY || DEFAULT_PRIVATE_KEY;
 const zksyncEraEndpoint = process.env.ZKSYNC_ERA_ENDPOINT || DEFAULT_ENDPOINT;
 const zksyncEraPrivateKey = process.env.ZKSYNC_ERA_PRIVATE_KEY || DEFAULT_PRIVATE_KEY;
 
+const flowEvmEndpoint = process.env.FLOW_EVM_ENDPOINT || DEFAULT_ENDPOINT;
+const flowEvmPrivateKey = process.env.FLOW_EVM_PRIVATE_KEY || DEFAULT_PRIVATE_KEY;
+
 // use kmsKeyId if it's not empty, otherwise use privateKey
 function getNetworkConfig(url: string, kmsKeyId: string, privateKey: string, gasPrice?: number): NetworkUserConfig {
   const network: NetworkUserConfig = !kmsKeyId
     ? {
-        url: url,
-        accounts: [`0x${privateKey}`]
-      }
+      url: url,
+      accounts: [`0x${privateKey}`]
+    }
     : {
-        url: url,
-        kmsKeyId: kmsKeyId
-      };
+      url: url,
+      kmsKeyId: kmsKeyId
+    };
   if (gasPrice) {
     network.gasPrice = gasPrice;
   }
@@ -288,6 +294,10 @@ const config: HardhatUserConfig = {
     ropsten: {
       url: ropstenEndpoint,
       accounts: [`0x${ropstenPrivateKey}`]
+    },
+    holesky: {
+      url: holeskyEndpoint,
+      accounts: [`0x${holeskyPrivateKey}`]
     },
     goerli: {
       url: goerliEndpoint,
@@ -431,7 +441,8 @@ const config: HardhatUserConfig = {
     base: getNetworkConfig(baseEndpoint, kmsKeyId, basePrivateKey),
     telos: getNetworkConfig(telosEndpoint, kmsKeyId, telosPrivateKey),
     scroll: getNetworkConfig(scrollEndpoint, kmsKeyId, scrollPrivateKey),
-    zksyncEra: zksyncEraNetwork
+    zksyncEra: zksyncEraNetwork,
+    flowEvm: getNetworkConfig(flowEvmEndpoint, kmsKeyId, flowEvmPrivateKey),
   },
   namedAccounts: {
     deployer: {
@@ -459,12 +470,13 @@ const config: HardhatUserConfig = {
   },
   typechain: {
     outDir: 'typechain',
-    target: 'ethers-v5'
+    target: 'ethers-v6'
   },
   etherscan: {
     apiKey: {
       // Testnets
       goerli: process.env.ETHERSCAN_API_KEY || '',
+      holesky: process.env.ETHERSCAN_API_KEY || '',
       avalancheFujiTestnet: process.env.SNOWTRACE_API_KEY || '',
       bscTestnet: process.env.BSCSCAN_API_KEY || '',
       arbitrumTestnet: process.env.ARBISCAN_API_KEY || '',
@@ -532,15 +544,15 @@ const config: HardhatUserConfig = {
   }
 };
 
-if (config.networks?.polygon) {
-  config.networks.polygon.minMaxPriorityFeePerGas = 30000000000;
-}
-if (config.networks?.fantom) {
-  config.networks.fantom.minMaxPriorityFeePerGas = 30000000000;
-}
-if (config.networks?.bsc) {
-  config.networks.bsc.minMaxPriorityFeePerGas = 3000000000;
-  config.networks.bsc.minMaxFeePerGas = 3000000000;
-}
+// if (config.networks?.polygon) {
+//   config.networks.polygon.minMaxPriorityFeePerGas = 30000000000;
+// }
+// if (config.networks?.fantom) {
+//   config.networks.fantom.minMaxPriorityFeePerGas = 30000000000;
+// }
+// if (config.networks?.bsc) {
+//   config.networks.bsc.minMaxPriorityFeePerGas = 3000000000;
+//   config.networks.bsc.minMaxFeePerGas = 3000000000;
+// }
 
 export default config;
